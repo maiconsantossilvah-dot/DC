@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='16' width='64' height='64' fill='%2307100f'/%3E%3Cpath d='M15 41c7-3 8-13 10-23 8 9 18 6 25 15-7-2-11 0-14 4 6-1 10 2 12 7-12-7-22 6-33-3Z' fill='%23d5ff55'/%3E%3Ccircle cx='38' cy='29' r='2' fill='%2307100f'/%3E%3C/svg%3E" />
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="./dragons-data.js"></script>
   <style>
     :root {
       color-scheme: dark;
@@ -109,6 +110,8 @@
     .clear-search:hover { color: var(--ink); background: rgba(255,255,255,.07); }
     .filters { display: flex; gap: 9px; overflow-x: auto; padding-top: 12px; scrollbar-width: none; }
     .filters::-webkit-scrollbar { display: none; }
+    .filter-block { display: grid; grid-template-columns: 82px minmax(0, 1fr); align-items: center; gap: 8px; }
+    .filter-label { color: var(--muted); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding-top: 12px; }
     .chip {
       flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px;
       border: 1px solid rgba(255,255,255,.1); background: transparent;
@@ -161,6 +164,10 @@
     .empty { grid-column: 1/-1; padding: 80px 20px; text-align: center; border: 1px dashed rgba(255,255,255,.15); border-radius: var(--radius); color: var(--muted); }
     .empty svg { color: var(--acid); width: 34px; height: 34px; }
     .empty h3 { color: var(--ink); margin: 12px 0 5px; font-family: "Unbounded"; font-size: 1.15rem; }
+    .load-more-wrap { display: flex; justify-content: center; padding: 26px 0 0; }
+    .load-more { min-height: 48px; padding: 0 20px; border: 1px solid rgba(213,255,85,.35); border-radius: 14px; background: rgba(213,255,85,.06); color: var(--acid); cursor: pointer; font-weight: 800; }
+    .load-more:hover { background: var(--acid); color: #07100f; }
+    .load-more[hidden] { display: none; }
     footer { border-top: 1px solid var(--line); padding: 22px 0 34px; color: var(--muted); font-size: .82rem; display: flex; gap: 18px; justify-content: space-between; }
     footer a { color: var(--ink); text-underline-offset: 3px; }
     dialog {
@@ -246,6 +253,8 @@
       .count-block { text-align: left; display: flex; align-items: baseline; gap: 10px; }
       .count-block strong { font-size: 2rem; }
       .controls { margin-inline: -4px; }
+      .filter-block { grid-template-columns: 1fr; gap: 0; }
+      .filter-label { padding: 12px 2px 0; }
       .grid { grid-template-columns: 1fr; }
       .card { min-height: 430px; }
       dialog { width: 100%; }
@@ -274,7 +283,7 @@
       <div>
         <p class="eyebrow">Arquivo de treinadores</p>
         <h1 id="page-title">Encontre seu próximo dragão.</h1>
-        <p class="intro-copy">Pesquise por nome ou família. Abra a ficha para comparar skins, bônus de combate, golpes e a prévia animada.</p>
+        <p class="intro-copy">Pesquise por nome, família ou raridade. Abra a ficha para comparar skins, bônus de combate, golpes e a prévia animada.</p>
       </div>
       <div class="count-block"><strong id="visibleCount">6</strong><span>dragões catalogados</span></div>
     </section>
@@ -282,14 +291,16 @@
     <section class="controls" aria-label="Busca e filtros">
       <div class="search-wrap">
         <i data-lucide="search"></i>
-        <input id="search" class="search" type="search" autocomplete="off" placeholder="Buscar por nome ou família…" aria-label="Buscar dragão por nome ou família" />
+        <input id="search" class="search" type="search" autocomplete="off" placeholder="Buscar por nome, família ou raridade…" aria-label="Buscar dragão por nome, família ou raridade" />
         <button id="clearSearch" class="clear-search" aria-label="Limpar busca"><i data-lucide="x"></i></button>
       </div>
-      <div id="filters" class="filters" aria-label="Filtrar por família"></div>
+      <div class="filter-block"><span class="filter-label">Famílias</span><div id="filters" class="filters" aria-label="Filtrar por família"></div></div>
+      <div class="filter-block"><span class="filter-label">Raridades</span><div id="rarityFilters" class="filters" aria-label="Filtrar por raridade"></div></div>
     </section>
 
     <div class="resultbar"><span id="resultText">Mostrando <b>6</b> dragões</span><span>Selecione um card para abrir a ficha</span></div>
     <section id="dragonGrid" class="grid" aria-live="polite"></section>
+    <div class="load-more-wrap"><button id="loadMore" class="load-more" hidden>Mostrar mais dragões</button></div>
   </main>
 
   <footer class="shell">
@@ -309,7 +320,7 @@
 
   <script>
     const img = file => `https://www.ditlep.com/Image?m=dragons/${file}`;
-    const dragons = [
+    const featuredDragons = [
       {
         id: 3011, name: 'High Master Karma', family: 'Karma', rarity: 'Heroico', category: 11,
         image: img('ui_3011_dragon_highmasterkarma_3.png'),
@@ -405,28 +416,45 @@
       }
     ];
 
-    const state = { query: '', family: 'Todas', activeDragon: null, activeTab: 'skins' };
+    const dragons = Array.isArray(window.DRAGONS_DATA) && window.DRAGONS_DATA.length ? window.DRAGONS_DATA : featuredDragons;
+    const state = { query: '', family: 'Todas', rarity: 'Todas', limit: 60, activeDragon: null, activeTab: 'skins' };
     const grid = document.querySelector('#dragonGrid');
     const filters = document.querySelector('#filters');
+    const rarityFilters = document.querySelector('#rarityFilters');
     const search = document.querySelector('#search');
     const clearSearch = document.querySelector('#clearSearch');
+    const loadMore = document.querySelector('#loadMore');
     const dialog = document.querySelector('#dragonDialog');
 
-    const families = ['Todas', ...new Set(dragons.map(d => d.family))];
+    const familyValues = [...new Set(dragons.map(d => d.family))].sort((a,b) => a.localeCompare(b, 'pt-BR'));
+    const families = ['Todas', ...familyValues.filter(f => f !== 'Sem família'), ...(familyValues.includes('Sem família') ? ['Sem família'] : [])];
+    const rarityOrder = ['Comum','Raro','Muito raro','Épico','Lendário','Mítico','Heroico'];
+    const rarities = ['Todas', ...rarityOrder.filter(r => dragons.some(d => d.rarity === r))];
     const norm = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const elementHtml = elements => elements.map(([name,color]) => `<span class="element"><i style="--ec:${color}"></i>${name}</span>`).join('');
+    const dragonAura = d => d.aura || `radial-gradient(circle at 50% 28%, color-mix(in srgb, ${d.accent || '#d5ff55'}, transparent 68%), transparent 42%), linear-gradient(145deg, color-mix(in srgb, ${d.accent || '#d5ff55'}, transparent 78%), transparent 62%)`;
+    const detailAura = d => d.detailAura || `radial-gradient(circle at 18% 30%, color-mix(in srgb, ${d.accent || '#d5ff55'}, transparent 86%), transparent 40%)`;
 
     function renderFilters() {
       filters.innerHTML = families.map(f => `<button class="chip ${state.family === f ? 'active' : ''}" data-family="${f}" aria-pressed="${state.family === f}"><span class="dot"></span>${f}</button>`).join('');
       filters.querySelectorAll('.chip').forEach(button => button.addEventListener('click', () => {
-        state.family = button.dataset.family;
+        state.family = button.dataset.family; state.limit = 60;
+        renderFilters(); renderGrid();
+      }));
+      rarityFilters.innerHTML = rarities.map(r => `<button class="chip ${state.rarity === r ? 'active' : ''}" data-rarity="${r}" aria-pressed="${state.rarity === r}"><span class="dot"></span>${r}</button>`).join('');
+      rarityFilters.querySelectorAll('.chip').forEach(button => button.addEventListener('click', () => {
+        state.rarity = button.dataset.rarity; state.limit = 60;
         renderFilters(); renderGrid();
       }));
     }
 
     function getVisibleDragons() {
       const q = norm(state.query.trim());
-      return dragons.filter(d => (state.family === 'Todas' || d.family === state.family) && (!q || norm(`${d.name} ${d.family}`).includes(q)));
+      return dragons.filter(d =>
+        (state.family === 'Todas' || d.family === state.family) &&
+        (state.rarity === 'Todas' || d.rarity === state.rarity) &&
+        (!q || norm(`${d.name} ${d.fullName || ''} ${d.family} ${d.rarity} ${(d.elements || []).map(e => e[0]).join(' ')}`).includes(q))
+      );
     }
 
     function renderGrid() {
@@ -434,13 +462,15 @@
       document.querySelector('#visibleCount').textContent = visible.length;
       document.querySelector('#resultText').innerHTML = `Mostrando <b>${visible.length}</b> ${visible.length === 1 ? 'dragão' : 'dragões'}`;
       clearSearch.style.display = state.query ? 'grid' : 'none';
+      loadMore.hidden = visible.length <= state.limit;
+      loadMore.textContent = `Mostrar mais ${Math.min(60, Math.max(0, visible.length - state.limit))} dragões`;
       if (!visible.length) {
         grid.innerHTML = `<div class="empty"><i data-lucide="search-x"></i><h3>Nenhum dragão encontrado</h3><div>Tente outro nome ou selecione uma família diferente.</div></div>`;
         lucide.createIcons(); return;
       }
-      grid.innerHTML = visible.map(d => `
+      grid.innerHTML = visible.slice(0, state.limit).map(d => `
         <article class="card" tabindex="0" role="button" aria-label="Abrir ficha de ${d.name}" data-id="${d.id}">
-          <div class="card-bg" style="--aura:${d.aura}"></div>
+          <div class="card-bg" style="--aura:${dragonAura(d)}"></div>
           <div class="card-head"><span class="rarity"><i data-lucide="crown" width="13"></i>${d.rarity}</span><span class="family-tag">${d.family}</span></div>
           <img class="dragon-art" src="${d.image}" alt="${d.name}" loading="lazy" />
           <div class="card-body">
@@ -470,13 +500,13 @@
       const d = dragons.find(item => item.id === id); if (!d) return;
       state.activeDragon = d; state.activeTab = 'skins';
       document.querySelector('#modalContent').innerHTML = `
-        <section class="profile" style="--detail-aura:${d.detailAura}">
+        <section class="profile" style="--detail-aura:${detailAura(d)}">
           <div class="stage" id="mainStage"><img src="${d.image}" alt="${d.name}" /></div>
-          <div class="profile-copy"><span class="detail-family">Família ${d.family}</span><h2 id="detailName">${d.name}</h2><p>${d.description}</p><div class="meta-row"><span class="meta-pill"><i data-lucide="crown" width="15"></i>${d.rarity}</span><span class="meta-pill"><i data-lucide="layers-3" width="15"></i>Categoria ${d.category}</span><span class="meta-pill"><i data-lucide="fingerprint" width="15"></i>#${d.id}</span></div><div class="elements">${elementHtml(d.elements)}</div><div class="action-row" style="margin-top:20px"><button class="action primary" id="quickAnimate"><i data-lucide="play" width="16"></i>Animar dragão</button><a class="action" href="${d.source}" target="_blank" rel="noreferrer"><i data-lucide="external-link" width="16"></i>Ver fonte</a></div></div>
+          <div class="profile-copy"><span class="detail-family">${d.family === 'Sem família' ? 'Sem família especial' : `Família ${d.family}`}</span><h2 id="detailName">${d.name}</h2><p>${d.description}</p><div class="meta-row"><span class="meta-pill"><i data-lucide="crown" width="15"></i>${d.rarity}</span><span class="meta-pill"><i data-lucide="layers-3" width="15"></i>Categoria ${d.category || '—'}</span><span class="meta-pill"><i data-lucide="fingerprint" width="15"></i>#${d.id}</span></div><div class="elements">${elementHtml(d.elements)}</div><div class="action-row" style="margin-top:20px"><button class="action primary" id="quickAnimate"><i data-lucide="play" width="16"></i>Animar dragão</button><a class="action" href="${d.source}" target="_blank" rel="noreferrer"><i data-lucide="external-link" width="16"></i>Ver fonte</a></div></div>
         </section>
         <nav class="tabs" role="tablist" aria-label="Detalhes do dragão"><button class="tab active" data-tab="skins" role="tab">Skins e buffs</button><button class="tab" data-tab="moves" role="tab">Golpes</button><button class="tab" data-tab="animation" role="tab">Animação</button></nav>
         <section class="tab-panel active" data-panel="skins"><div class="skin-grid">${d.skins.map(skinHtml).join('')}</div></section>
-        <section class="tab-panel" data-panel="moves"><div class="moves"><article class="move-column"><h3><i data-lucide="swords" width="18"></i>Golpes base</h3><div class="move-list">${d.base.map(moveHtml).join('')}</div></article><article class="move-column"><h3><i data-lucide="dumbbell" width="18"></i>Golpes treinados</h3><div class="move-list">${d.trained.map(moveHtml).join('')}</div></article></div></section>
+        <section class="tab-panel" data-panel="moves"><div class="moves"><article class="move-column"><h3><i data-lucide="swords" width="18"></i>Golpes base</h3><div class="move-list">${d.base.length ? d.base.map(moveHtml).join('') : '<div class="empty">Golpes não disponíveis na fonte.</div>'}</div></article><article class="move-column"><h3><i data-lucide="dumbbell" width="18"></i>Golpes treinados</h3><div class="move-list">${d.trained.length ? d.trained.map(moveHtml).join('') : '<div class="empty">Treinamento não disponível na fonte.</div>'}</div></article></div></section>
         <section class="tab-panel" data-panel="animation"><div class="animation-panel"><div class="mini-stage"><img src="${d.image}" alt="Prévia animada de ${d.name}" /></div><div class="animation-copy"><span class="detail-family">Prévia em movimento</span><h3>Idle flutuante</h3><p>Uma prévia leve da presença do dragão, com movimento, inclinação e brilho adaptados para a ficha.</p><div class="animation-notice">A animação original completa usa arquivos do jogo. O link abaixo abre o visualizador 3D de referência quando disponível.</div><a class="action" href="https://www.ditlep.com/DragonAnimation?dragonId=${d.id}" target="_blank" rel="noreferrer"><i data-lucide="box" width="16"></i>Abrir animação 3D</a></div></div></section>`;
       wireModal(); dialog.showModal(); lucide.createIcons();
     }
@@ -496,8 +526,9 @@
       }));
     }
 
-    search.addEventListener('input', () => { state.query = search.value; renderGrid(); });
-    clearSearch.addEventListener('click', () => { search.value = ''; state.query = ''; search.focus(); renderGrid(); });
+    search.addEventListener('input', () => { state.query = search.value; state.limit = 60; renderGrid(); });
+    clearSearch.addEventListener('click', () => { search.value = ''; state.query = ''; state.limit = 60; search.focus(); renderGrid(); });
+    loadMore.addEventListener('click', () => { state.limit += 60; renderGrid(); });
     document.querySelector('#closeDialog').addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
 
@@ -507,9 +538,9 @@
       const safe = fn => input => { try { return fn(input || {}); } catch (error) { throw new Error(error.message); } };
       context.registerTool({
         name:'search_dragons', title:'Pesquisar dragões', description:'Filtra o catálogo visível por nome e, opcionalmente, por família.',
-        inputSchema:{type:'object',properties:{query:{type:'string'},family:{type:'string',enum:families}},additionalProperties:false},
+        inputSchema:{type:'object',properties:{query:{type:'string'},family:{type:'string',enum:families},rarity:{type:'string',enum:rarities}},additionalProperties:false},
         annotations:{readOnlyHint:true,untrustedContentHint:false},
-        execute:safe(({query='',family='Todas'}) => { if (!families.includes(family)) throw new Error('Família inválida.'); state.query=query; state.family=family; search.value=query; renderFilters(); renderGrid(); return {count:getVisibleDragons().length,names:getVisibleDragons().map(d=>d.name)}; })
+        execute:safe(({query='',family='Todas',rarity='Todas'}) => { if (!families.includes(family)) throw new Error('Família inválida.'); if (!rarities.includes(rarity)) throw new Error('Raridade inválida.'); state.query=query; state.family=family; state.rarity=rarity; state.limit=60; search.value=query; renderFilters(); renderGrid(); return {count:getVisibleDragons().length,names:getVisibleDragons().slice(0,100).map(d=>d.name)}; })
       });
       context.registerTool({
         name:'open_dragon_profile', title:'Abrir ficha de dragão', description:'Abre a ficha de um dragão pelo ID e exibe skins, golpes e animação.',

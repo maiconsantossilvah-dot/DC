@@ -11,3 +11,12 @@ Catálogo responsivo de dragões do Dragon City, com pesquisa por nome ou famíl
 
 O arquivo `index.html` já está na raiz e não precisa de processo de build.
 
+## Catálogo
+
+O projeto inclui mais de 2.200 dragões distribuídos entre as raridades Comum, Raro, Muito raro, Épico, Lendário, Mítico e Heroico. Famílias VIP como Karma, Vampire, Titan, Corrupted, Ascended, Redemption, Arcana, Plasma, Eternal e outras têm filtros próprios.
+
+Os dados compilados ficam em `dragons-data.js`. Para atualizar o catálogo e as informações de skins a partir do Ditlep, execute:
+
+```powershell
+node scripts/sync-ditlep.mjs
+```
