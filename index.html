@@ -156,8 +156,9 @@
     .card-body { position: absolute; inset: auto 0 0; padding: 20px; }
     .dragon-name { margin: 0 0 12px; font-family: "Unbounded"; font-size: 1.12rem; line-height: 1.25; letter-spacing: -.035em; }
     .elements { display: flex; gap: 7px; flex-wrap: wrap; }
-    .element { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: .79rem; }
-    .element i { width: 8px; height: 8px; border-radius: 3px; background: var(--ec); box-shadow: 0 0 11px color-mix(in srgb, var(--ec), transparent 35%); }
+    .element { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .79rem; }
+    .element-icon { width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.35)); }
+    .element-dot { width: 9px; height: 9px; border-radius: 3px; background: var(--ec); box-shadow: 0 0 11px color-mix(in srgb, var(--ec), transparent 35%); }
     .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); }
     .skin-count { color: var(--muted); font-size: .82rem; display: flex; align-items: center; gap: 7px; }
     .open-label { color: var(--acid); font-weight: 800; font-size: .84rem; display: flex; align-items: center; gap: 7px; }
@@ -229,15 +230,23 @@
     .move-list { display: grid; gap: 9px; }
     .move { display: grid; grid-template-columns: 42px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(255,255,255,.07); border-radius: 13px; background: rgba(255,255,255,.025); }
     .move-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: color-mix(in srgb, var(--mc), transparent 78%); color: var(--mc); }
+    .move-icon img { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.3)); }
     .move strong { display: block; font-size: .89rem; }
     .move small { color: var(--muted); font-size: .75rem; }
     .power { font-family: "Unbounded"; font-size: .82rem; color: var(--acid); }
-    .animation-panel { min-height: 340px; border: 1px solid var(--line); border-radius: 19px; background: var(--panel); padding: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
-    .mini-stage { min-height: 270px; position: relative; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 50%, rgba(113,246,220,.12), transparent 66%); border-radius: 17px; }
-    .mini-stage img { width: 85%; max-height: 270px; object-fit: contain; filter: drop-shadow(0 22px 25px rgba(0,0,0,.5)); animation: dragonIdle 3.1s ease-in-out infinite; }
-    .animation-copy h3 { margin: 0 0 8px; font-family: "Unbounded"; }
-    .animation-copy p { color: var(--muted); }
-    .animation-notice { font-size: .82rem; color: var(--muted); border-left: 2px solid var(--acid); padding-left: 12px; margin: 16px 0; }
+    .animation-panel { min-height: 440px; border: 1px solid var(--line); border-radius: 19px; background: var(--panel); padding: 18px; }
+    .animation-head { display: flex; justify-content: space-between; align-items: end; gap: 22px; margin-bottom: 15px; }
+    .animation-head h3 { margin: 5px 0 0; font-family: "Unbounded"; font-size: 1.1rem; }
+    .animation-head p { max-width: 54ch; margin: 0; color: var(--muted); font-size: .86rem; text-align: right; }
+    .dragon-viewer { position: relative; min-height: 560px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; background: radial-gradient(circle at 50% 44%, rgba(113,246,220,.12), transparent 62%), #08110f; }
+    .dragon-viewer iframe { width: 100%; height: 620px; display: block; border: 0; opacity: 0; transition: opacity .25s ease; background: transparent; }
+    .dragon-viewer.loaded iframe { opacity: 1; }
+    .viewer-loading { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px; color: var(--muted); text-align: center; z-index: 2; pointer-events: none; }
+    .viewer-loading svg { color: var(--acid); animation: spin 1s linear infinite; }
+    .dragon-viewer.loaded .viewer-loading { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animation-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 14px; }
+    .animation-notice { font-size: .8rem; color: var(--muted); border-left: 2px solid var(--acid); padding-left: 12px; }
     @media (max-width: 980px) {
       .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .profile { grid-template-columns: 1fr; }
@@ -261,7 +270,11 @@
       .modal-content { padding: 12px; }
       .profile { padding: 16px; }
       .skin-card { grid-template-columns: 118px 1fr; }
-      .moves, .animation-panel { grid-template-columns: 1fr; }
+      .moves { grid-template-columns: 1fr; }
+      .animation-head, .animation-footer { align-items: flex-start; flex-direction: column; }
+      .animation-head p { text-align: left; }
+      .dragon-viewer { min-height: 480px; }
+      .dragon-viewer iframe { height: 540px; }
       footer { flex-direction: column; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -283,7 +296,7 @@
       <div>
         <p class="eyebrow">Arquivo de treinadores</p>
         <h1 id="page-title">Encontre seu próximo dragão.</h1>
-        <p class="intro-copy">Pesquise por nome, família ou raridade. Abra a ficha para comparar skins, bônus de combate, golpes e a prévia animada.</p>
+        <p class="intro-copy">Pesquise por nome, família ou raridade. Abra a ficha para comparar skins, bônus de combate, golpes e a animação integrada.</p>
       </div>
       <div class="count-block"><strong id="visibleCount">6</strong><span>dragões catalogados</span></div>
     </section>
@@ -431,7 +444,7 @@
     const rarityOrder = ['Comum','Raro','Muito raro','Épico','Lendário','Mítico','Heroico'];
     const rarities = ['Todas', ...rarityOrder.filter(r => dragons.some(d => d.rarity === r))];
     const norm = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const elementHtml = elements => elements.map(([name,color]) => `<span class="element"><i style="--ec:${color}"></i>${name}</span>`).join('');
+    const elementHtml = elements => elements.map(([name,color,icon]) => `<span class="element">${icon ? `<img class="element-icon" src="${icon}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><i class="element-dot" style="--ec:${color}" hidden></i>` : `<i class="element-dot" style="--ec:${color}"></i>`}${name}</span>`).join('');
     const dragonAura = d => d.aura || `radial-gradient(circle at 50% 28%, color-mix(in srgb, ${d.accent || '#d5ff55'}, transparent 68%), transparent 42%), linear-gradient(145deg, color-mix(in srgb, ${d.accent || '#d5ff55'}, transparent 78%), transparent 62%)`;
     const detailAura = d => d.detailAura || `radial-gradient(circle at 18% 30%, color-mix(in srgb, ${d.accent || '#d5ff55'}, transparent 86%), transparent 40%)`;
 
@@ -493,7 +506,8 @@
 
     function moveHtml(m) {
       const colorMap = {Caos:'#b97fff',Vento:'#bdeef3',Primordial:'#ffab62',Gelo:'#72d4ff',Tempo:'#86e9ff',Metal:'#aab5bd',Sonho:'#ff91d6',Alma:'#f5e8a3',Lenda:'#f4ca48',Puro:'#f1c8ff',Sombrio:'#8c79ad',Magia:'#cb85ff'};
-      return `<div class="move"><div class="move-icon" style="--mc:${colorMap[m[1]] || '#d5ff55'}"><i data-lucide="${m[3]}"></i></div><div><strong>${m[0]}</strong><small>${m[1]}</small></div><span class="power">${m[2]}</span></div>`;
+      const icon = m[4] ? `<img src="${m[4]}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><i data-lucide="${m[3]}" hidden></i>` : `<i data-lucide="${m[3]}"></i>`;
+      return `<div class="move"><div class="move-icon" style="--mc:${colorMap[m[1]] || '#d5ff55'}">${icon}</div><div><strong>${m[0]}</strong><small>${m[1]}</small></div><span class="power">${m[2]}</span></div>`;
     }
 
     function openDragon(id) {
@@ -502,28 +516,34 @@
       document.querySelector('#modalContent').innerHTML = `
         <section class="profile" style="--detail-aura:${detailAura(d)}">
           <div class="stage" id="mainStage"><img src="${d.image}" alt="${d.name}" /></div>
-          <div class="profile-copy"><span class="detail-family">${d.family === 'Sem família' ? 'Sem família especial' : `Família ${d.family}`}</span><h2 id="detailName">${d.name}</h2><p>${d.description}</p><div class="meta-row"><span class="meta-pill"><i data-lucide="crown" width="15"></i>${d.rarity}</span><span class="meta-pill"><i data-lucide="layers-3" width="15"></i>Categoria ${d.category || '—'}</span><span class="meta-pill"><i data-lucide="fingerprint" width="15"></i>#${d.id}</span></div><div class="elements">${elementHtml(d.elements)}</div><div class="action-row" style="margin-top:20px"><button class="action primary" id="quickAnimate"><i data-lucide="play" width="16"></i>Animar dragão</button><a class="action" href="${d.source}" target="_blank" rel="noreferrer"><i data-lucide="external-link" width="16"></i>Ver fonte</a></div></div>
+          <div class="profile-copy"><span class="detail-family">${d.family === 'Sem família' ? 'Sem família especial' : `Família ${d.family}`}</span><h2 id="detailName">${d.name}</h2><p>${d.description}</p><div class="meta-row"><span class="meta-pill"><i data-lucide="crown" width="15"></i>${d.rarity}</span><span class="meta-pill"><i data-lucide="layers-3" width="15"></i>Categoria ${d.category || '—'}</span><span class="meta-pill"><i data-lucide="fingerprint" width="15"></i>#${d.id}</span></div><div class="elements">${elementHtml(d.elements)}</div><div class="action-row" style="margin-top:20px"><button class="action primary" id="quickAnimate"><i data-lucide="box" width="16"></i>Ver animação 3D</button><a class="action" href="${d.source}" target="_blank" rel="noreferrer"><i data-lucide="external-link" width="16"></i>Ver fonte</a></div></div>
         </section>
-        <nav class="tabs" role="tablist" aria-label="Detalhes do dragão"><button class="tab active" data-tab="skins" role="tab">Skins e buffs</button><button class="tab" data-tab="moves" role="tab">Golpes</button><button class="tab" data-tab="animation" role="tab">Animação</button></nav>
+        <nav class="tabs" role="tablist" aria-label="Detalhes do dragão"><button class="tab active" data-tab="skins" role="tab">Skins e buffs</button><button class="tab" data-tab="moves" role="tab">Golpes</button><button class="tab" data-tab="animation" role="tab">Animação 3D</button></nav>
         <section class="tab-panel active" data-panel="skins"><div class="skin-grid">${d.skins.map(skinHtml).join('')}</div></section>
         <section class="tab-panel" data-panel="moves"><div class="moves"><article class="move-column"><h3><i data-lucide="swords" width="18"></i>Golpes base</h3><div class="move-list">${d.base.length ? d.base.map(moveHtml).join('') : '<div class="empty">Golpes não disponíveis na fonte.</div>'}</div></article><article class="move-column"><h3><i data-lucide="dumbbell" width="18"></i>Golpes treinados</h3><div class="move-list">${d.trained.length ? d.trained.map(moveHtml).join('') : '<div class="empty">Treinamento não disponível na fonte.</div>'}</div></article></div></section>
-        <section class="tab-panel" data-panel="animation"><div class="animation-panel"><div class="mini-stage"><img src="${d.image}" alt="Prévia animada de ${d.name}" /></div><div class="animation-copy"><span class="detail-family">Prévia em movimento</span><h3>Idle flutuante</h3><p>Uma prévia leve da presença do dragão, com movimento, inclinação e brilho adaptados para a ficha.</p><div class="animation-notice">A animação original completa usa arquivos do jogo. O link abaixo abre o visualizador 3D de referência quando disponível.</div><a class="action" href="https://www.ditlep.com/DragonAnimation?dragonId=${d.id}" target="_blank" rel="noreferrer"><i data-lucide="box" width="16"></i>Abrir animação 3D</a></div></div></section>`;
+        <section class="tab-panel" data-panel="animation"><div class="animation-panel"><div class="animation-head"><div><span class="detail-family">Visualizador integrado</span><h3>Animação de ${d.name}</h3></div><p>O modelo animado é carregado sob demanda para deixar o catálogo rápido.</p></div><div class="dragon-viewer" id="dragonViewer"><div class="viewer-loading"><i data-lucide="loader-circle" width="28"></i><span>Carregando animação…<br><small>O primeiro carregamento pode levar alguns segundos.</small></span></div><iframe id="dragonAnimationFrame" title="Animação 3D de ${d.name}" data-src="https://www.ditlep.com/DragonAnimation?dragonId=${d.id}&hasLayout=false" loading="lazy" allow="fullscreen" allowfullscreen></iframe></div><div class="animation-footer"><div class="animation-notice">Visualizador fornecido pelo Ditlep. Algumas animações podem não existir para dragões muito novos.</div><a class="action" href="https://www.ditlep.com/DragonAnimation?dragonId=${d.id}" target="_blank" rel="noreferrer"><i data-lucide="external-link" width="16"></i>Abrir em nova aba</a></div></div></section>`;
       wireModal(); dialog.showModal(); lucide.createIcons();
     }
 
     function wireModal() {
-      const stage = document.querySelector('#mainStage');
-      document.querySelector('#quickAnimate').addEventListener('click', event => {
-        stage.classList.toggle('playing');
-        const playing = stage.classList.contains('playing');
-        event.currentTarget.innerHTML = `<i data-lucide="${playing ? 'pause' : 'play'}" width="16"></i>${playing ? 'Pausar' : 'Animar dragão'}`;
-        lucide.createIcons();
-      });
-      document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
-        state.activeTab = tab.dataset.tab;
-        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+      const loadDragonAnimation = () => {
+        const frame = document.querySelector('#dragonAnimationFrame');
+        const viewer = document.querySelector('#dragonViewer');
+        if (!frame || !viewer || frame.getAttribute('src')) return;
+        frame.addEventListener('load', () => viewer.classList.add('loaded'), { once: true });
+        frame.setAttribute('src', frame.dataset.src);
+      };
+      const activateTab = name => {
+        state.activeTab = name;
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === state.activeTab));
-      }));
+        if (name === 'animation') loadDragonAnimation();
+      };
+      document.querySelector('#quickAnimate').addEventListener('click', () => {
+        activateTab('animation');
+        document.querySelector('[data-panel="animation"]').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => activateTab(tab.dataset.tab)));
     }
 
     search.addEventListener('input', () => { state.query = search.value; state.limit = 60; renderGrid(); });

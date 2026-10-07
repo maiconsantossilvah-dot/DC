@@ -78,11 +78,32 @@ function slug(value = "") {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function absoluteImage(value, suffix = "_3.png") {
+function absoluteImage(value, suffix = "_3@2x.png") {
   if (!value) return "";
   if (/^https?:/i.test(value)) return value;
   if (value.startsWith("/Image?")) return `${BASE}${value}`;
   return `${BASE}/Image?m=${value}${suffix}`;
+}
+
+function localElementIcon(value) {
+  if (!value) return "";
+  return `assets/elements/${path.basename(value)}`;
+}
+
+async function download(url, target, attempts = 3) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(60_000) });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await writeFile(target, Buffer.from(await response.arrayBuffer()));
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+    }
+  }
+  throw lastError;
 }
 
 function stripMoveName(move) {
@@ -176,6 +197,19 @@ async function main() {
   const details = detailGroups.flat();
   const detailsById = new Map(details.map(item => [item.id, item]));
 
+  const elementIconByCode = new Map();
+  for (const detail of details) {
+    (detail.elements || []).forEach((code, index) => {
+      const icon = detail.dragonAttribute?.[index];
+      if (icon && !elementIconByCode.has(code)) elementIconByCode.set(code, localElementIcon(icon));
+    });
+  }
+  const elementIconUrls = [...new Set(details.flatMap(detail => detail.dragonAttribute || []).filter(Boolean))];
+  const elementAssets = path.join(ROOT, "assets", "elements");
+  await mkdir(elementAssets, { recursive: true });
+  console.log(`Baixando ${elementIconUrls.length} ícones oficiais de elementos…`);
+  await pool(elementIconUrls, 6, icon => download(`${BASE}${icon}`, path.join(elementAssets, path.basename(icon))));
+
   console.log("Buscando skins e bônus…");
   const skinCatalog = await json(`${BASE}/DragonSkin/Catalog`);
   const combatSkins = skinCatalog.filter(skin => skin.hasCombatBonus);
@@ -198,7 +232,10 @@ async function main() {
   const catalog = summaries.map(summary => {
     const detail = detailsById.get(summary.id) || summary;
     const family = familyOf(detail);
-    const elementPairs = (detail.elements || []).map(code => elements[code] || [code.toUpperCase(), "#d5ff55", "sparkles"]);
+    const elementPairs = (detail.elements || []).map(code => {
+      const [name, color, lucideIcon] = elements[code] || [code.toUpperCase(), "#d5ff55", "sparkles"];
+      return [name, color, lucideIcon, elementIconByCode.get(code) || ""];
+    });
     const special = (detail.skills || []).filter(skill => skill.name || skill.description).slice(0, 2);
     const description = special.length
       ? special.map(skill => `${skill.name || "Habilidade"}: ${skill.description || "habilidade especial"}`).join(" ")
@@ -227,6 +264,7 @@ async function main() {
       (elements[item.element] || [item.element?.toUpperCase() || "Especial"])[0],
       Number(item.damage) || 0,
       (elements[item.element] || [null, null, "sparkles"])[2],
+      elementIconByCode.get(item.element) || "",
     ];
 
     return {
@@ -240,7 +278,7 @@ async function main() {
       image: absoluteImage(detail.image || summary.image),
       source: `${BASE}/dragons/${detail.id}/${slug(detail.name || summary.name)}?lang=en-US`,
       description,
-      elements: elementPairs.map(([name, color]) => [name, color]),
+      elements: elementPairs.map(([name, color, , icon]) => [name, color, icon]),
       skins: [defaultSkin, ...knownSkins, ...extraSkins].slice(0, 12),
       base: (detail.attackSkills || []).map(move),
       trained: (detail.trainableAttackSkills || []).map(move),
