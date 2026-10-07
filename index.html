@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07100f" />
+  <meta name="description" content="Catálogo pesquisável de dragões do Dragon City, com famílias, skins, buffs, golpes e animações." />
+  <title>Atlas Dracônico — Catálogo Dragon City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='16' width='64' height='64' fill='%2307100f'/%3E%3Cpath d='M15 41c7-3 8-13 10-23 8 9 18 6 25 15-7-2-11 0-14 4 6-1 10 2 12 7-12-7-22 6-33-3Z' fill='%23d5ff55'/%3E%3Ccircle cx='38' cy='29' r='2' fill='%2307100f'/%3E%3C/svg%3E" />
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07100f;
+      --panel: #0d1917;
+      --panel-2: #13211f;
+      --line: rgba(221, 255, 128, .13);
+      --ink: #f2f8e8;
+      --muted: #99aaa5;
+      --acid: #d5ff55;
+      --cyan: #71f6dc;
+      --orange: #ff9850;
+      --violet: #ba8cff;
+      --danger: #ff7474;
+      --radius: 22px;
+      --shadow: 0 30px 90px rgba(0, 0, 0, .36);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 7% -10%, rgba(113, 246, 220, .1), transparent 30rem),
+        radial-gradient(circle at 95% 10%, rgba(213, 255, 85, .08), transparent 34rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: "DM Sans", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    a { color: inherit; }
+    .shell { width: min(1450px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: var(--acid); color: #08100f;
+      box-shadow: 0 0 34px rgba(213, 255, 85, .22);
+    }
+    .brand strong { font-family: "Unbounded", sans-serif; font-size: .96rem; letter-spacing: -.03em; }
+    .brand span { color: var(--muted); font-size: .84rem; margin-left: 6px; }
+    .source-pill { color: var(--muted); font-size: .86rem; display: flex; align-items: center; gap: 8px; }
+    .source-pill a { color: var(--ink); text-underline-offset: 3px; }
+    main { padding: 34px 0 64px; }
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) auto;
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 30px;
+    }
+    .eyebrow { margin: 0 0 8px; color: var(--acid); font-weight: 700; text-transform: uppercase; letter-spacing: .13em; font-size: .78rem; }
+    h1 {
+      margin: 0;
+      max-width: 820px;
+      font-family: "Unbounded", sans-serif;
+      font-size: clamp(2.15rem, 5vw, 4.8rem);
+      line-height: .98;
+      letter-spacing: -.065em;
+    }
+    .intro-copy { margin: 18px 0 0; max-width: 650px; color: var(--muted); font-size: 1.04rem; }
+    .count-block { text-align: right; padding-bottom: 4px; }
+    .count-block strong { display: block; font-family: "Unbounded"; color: var(--acid); font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1; }
+    .count-block span { color: var(--muted); font-size: .86rem; }
+    .controls {
+      position: sticky; top: 0; z-index: 12;
+      padding: 14px;
+      background: rgba(7, 16, 15, .84);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.18);
+      margin-bottom: 26px;
+    }
+    .search-wrap { position: relative; }
+    .search-wrap > svg { position: absolute; left: 17px; top: 50%; transform: translateY(-50%); color: var(--acid); width: 20px; }
+    .search {
+      width: 100%; height: 54px; padding: 0 50px 0 50px;
+      border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+      color: var(--ink); background: var(--panel-2); outline: none;
+    }
+    .search::placeholder { color: #758680; }
+    .search:focus { border-color: var(--acid); box-shadow: 0 0 0 3px rgba(213,255,85,.09); }
+    .clear-search { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; padding: 9px; border-radius: 9px; cursor: pointer; color: var(--muted); display: none; }
+    .clear-search:hover { color: var(--ink); background: rgba(255,255,255,.07); }
+    .filters { display: flex; gap: 9px; overflow-x: auto; padding-top: 12px; scrollbar-width: none; }
+    .filters::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid rgba(255,255,255,.1); background: transparent;
+      padding: 9px 13px; border-radius: 999px; color: var(--muted); cursor: pointer;
+      font-weight: 700; font-size: .88rem;
+    }
+    .chip:hover { color: var(--ink); border-color: rgba(255,255,255,.22); }
+    .chip.active { color: #08100f; background: var(--acid); border-color: var(--acid); }
+    .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .8; }
+    .resultbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin: 0 2px 14px; color: var(--muted); font-size: .91rem; }
+    .resultbar b { color: var(--ink); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .card {
+      position: relative; min-height: 454px; overflow: hidden;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(160deg, rgba(255,255,255,.025), rgba(255,255,255,.005)), var(--panel);
+      cursor: pointer; isolation: isolate;
+      transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+    }
+    .card:hover { transform: translateY(-5px); border-color: rgba(213,255,85,.45); box-shadow: var(--shadow); }
+    .card:focus-visible { outline: 3px solid var(--acid); outline-offset: 4px; }
+    .card-bg { position: absolute; inset: 0; z-index: -2; background: var(--aura); opacity: .9; }
+    .card::before {
+      content: ""; position: absolute; inset: 0; z-index: -1;
+      background: linear-gradient(to bottom, transparent 25%, rgba(7,16,15,.16) 52%, #0d1917 79%);
+    }
+    .card-head { display: flex; justify-content: space-between; padding: 17px; position: relative; z-index: 2; }
+    .rarity, .family-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 10px; border-radius: 999px;
+      font-size: .74rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+      background: rgba(7,16,15,.68); backdrop-filter: blur(9px); border: 1px solid rgba(255,255,255,.12);
+    }
+    .rarity { color: var(--acid); }
+    .family-tag { color: #dce8e3; }
+    .dragon-art {
+      width: 100%; height: 285px; object-fit: contain; display: block;
+      padding: 8px 28px 0; filter: drop-shadow(0 26px 25px rgba(0,0,0,.48));
+      transition: transform .4s cubic-bezier(.2,.8,.2,1);
+    }
+    .card:hover .dragon-art { transform: scale(1.055) translateY(-5px); }
+    .card-body { position: absolute; inset: auto 0 0; padding: 20px; }
+    .dragon-name { margin: 0 0 12px; font-family: "Unbounded"; font-size: 1.12rem; line-height: 1.25; letter-spacing: -.035em; }
+    .elements { display: flex; gap: 7px; flex-wrap: wrap; }
+    .element { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: .79rem; }
+    .element i { width: 8px; height: 8px; border-radius: 3px; background: var(--ec); box-shadow: 0 0 11px color-mix(in srgb, var(--ec), transparent 35%); }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); }
+    .skin-count { color: var(--muted); font-size: .82rem; display: flex; align-items: center; gap: 7px; }
+    .open-label { color: var(--acid); font-weight: 800; font-size: .84rem; display: flex; align-items: center; gap: 7px; }
+    .empty { grid-column: 1/-1; padding: 80px 20px; text-align: center; border: 1px dashed rgba(255,255,255,.15); border-radius: var(--radius); color: var(--muted); }
+    .empty svg { color: var(--acid); width: 34px; height: 34px; }
+    .empty h3 { color: var(--ink); margin: 12px 0 5px; font-family: "Unbounded"; font-size: 1.15rem; }
+    footer { border-top: 1px solid var(--line); padding: 22px 0 34px; color: var(--muted); font-size: .82rem; display: flex; gap: 18px; justify-content: space-between; }
+    footer a { color: var(--ink); text-underline-offset: 3px; }
+    dialog {
+      position: fixed; inset: 0 0 0 auto; margin: 0; width: min(1040px, 100%); max-width: none; height: 100dvh;
+      border: 0; border-left: 1px solid var(--line); padding: 0; color: var(--ink); background: #091311;
+      box-shadow: -40px 0 100px rgba(0,0,0,.5);
+      transform: translateX(100%); transition: transform .3s ease, display .3s allow-discrete, overlay .3s allow-discrete;
+    }
+    dialog[open] { transform: translateX(0); }
+    @starting-style { dialog[open] { transform: translateX(100%); } }
+    dialog::backdrop { background: rgba(0,8,8,.7); backdrop-filter: blur(4px); opacity: 0; transition: opacity .3s ease, display .3s allow-discrete, overlay .3s allow-discrete; }
+    dialog[open]::backdrop { opacity: 1; }
+    @starting-style { dialog[open]::backdrop { opacity: 0; } }
+    .modal-shell { min-height: 100%; }
+    .modal-top { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 17px 22px; background: rgba(9,19,17,.88); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+    .modal-kicker { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+    .icon-btn { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); cursor: pointer; }
+    .icon-btn:hover { background: rgba(255,255,255,.09); }
+    .modal-content { padding: 22px; }
+    .profile {
+      display: grid; grid-template-columns: minmax(280px, .92fr) 1.08fr;
+      gap: 26px; padding: 26px; border: 1px solid var(--line); border-radius: 24px; background: var(--detail-aura), var(--panel);
+    }
+    .stage { min-height: 360px; display: grid; place-items: center; position: relative; overflow: hidden; }
+    .stage::after { content: ""; position: absolute; width: 65%; aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(213,255,85,.16); box-shadow: 0 0 0 28px rgba(213,255,85,.025), 0 0 0 60px rgba(213,255,85,.018); }
+    .stage img { position: relative; z-index: 2; width: 100%; max-height: 380px; object-fit: contain; filter: drop-shadow(0 30px 28px rgba(0,0,0,.5)); }
+    .stage.playing img { animation: dragonIdle 3.1s ease-in-out infinite, dragonGlow 1.55s ease-in-out infinite alternate; }
+    @keyframes dragonIdle { 0%,100% { transform: translateY(0) rotate(-.5deg); } 50% { transform: translateY(-15px) rotate(.8deg); } }
+    @keyframes dragonGlow { from { filter: drop-shadow(0 24px 24px rgba(0,0,0,.48)); } to { filter: drop-shadow(0 25px 34px rgba(213,255,85,.22)); } }
+    .profile-copy { display: flex; flex-direction: column; justify-content: center; }
+    .detail-family { color: var(--acid); font-weight: 800; text-transform: uppercase; letter-spacing: .1em; font-size: .78rem; }
+    .profile h2 { margin: 9px 0 13px; font-family: "Unbounded"; letter-spacing: -.055em; line-height: 1.05; font-size: clamp(2rem, 5vw, 3.6rem); }
+    .profile p { color: var(--muted); margin: 0 0 18px; max-width: 56ch; }
+    .meta-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    .meta-pill { display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: 8px 11px; font-size: .82rem; background: rgba(7,16,15,.35); }
+    .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .action { display: inline-flex; align-items: center; gap: 8px; min-height: 43px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.13); background: rgba(255,255,255,.04); color: var(--ink); cursor: pointer; text-decoration: none; font-weight: 700; }
+    .action:hover { border-color: var(--acid); }
+    .action.primary { background: var(--acid); color: #07100f; border-color: var(--acid); }
+    .tabs { display: flex; gap: 7px; margin: 24px 0 14px; overflow-x: auto; scrollbar-width: none; }
+    .tab { flex: 0 0 auto; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 10px 14px; background: transparent; color: var(--muted); cursor: pointer; font-weight: 800; }
+    .tab.active { background: var(--ink); color: #07100f; border-color: var(--ink); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: reveal .22s ease; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(5px); } }
+    .skin-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+    .skin-card { display: grid; grid-template-columns: 150px 1fr; min-height: 190px; border: 1px solid var(--line); border-radius: 19px; overflow: hidden; background: var(--panel); }
+    .skin-art { background: radial-gradient(circle at 50% 45%, rgba(213,255,85,.13), transparent 70%); display: grid; place-items: center; }
+    .skin-art img { width: 100%; max-height: 180px; object-fit: contain; padding: 10px; filter: drop-shadow(0 15px 16px rgba(0,0,0,.4)); }
+    .skin-copy { padding: 17px 17px 17px 2px; }
+    .skin-type { display: inline-flex; align-items: center; gap: 6px; color: var(--acid); font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+    .skin-copy h3 { margin: 8px 0 6px; font-family: "Unbounded"; font-size: .96rem; }
+    .skin-copy p { color: var(--muted); margin: 0; font-size: .88rem; }
+    .buff { display: flex; gap: 7px; align-items: flex-start; margin-top: 10px; color: #e5f2ca; font-size: .8rem; }
+    .buff svg { color: var(--acid); width: 16px; height: 16px; flex: 0 0 auto; margin-top: 2px; }
+    .moves { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+    .move-column { border: 1px solid var(--line); background: var(--panel); border-radius: 19px; padding: 18px; }
+    .move-column h3 { margin: 0 0 12px; font-family: "Unbounded"; font-size: 1rem; display: flex; align-items: center; gap: 9px; }
+    .move-list { display: grid; gap: 9px; }
+    .move { display: grid; grid-template-columns: 42px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(255,255,255,.07); border-radius: 13px; background: rgba(255,255,255,.025); }
+    .move-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: color-mix(in srgb, var(--mc), transparent 78%); color: var(--mc); }
+    .move strong { display: block; font-size: .89rem; }
+    .move small { color: var(--muted); font-size: .75rem; }
+    .power { font-family: "Unbounded"; font-size: .82rem; color: var(--acid); }
+    .animation-panel { min-height: 340px; border: 1px solid var(--line); border-radius: 19px; background: var(--panel); padding: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+    .mini-stage { min-height: 270px; position: relative; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 50%, rgba(113,246,220,.12), transparent 66%); border-radius: 17px; }
+    .mini-stage img { width: 85%; max-height: 270px; object-fit: contain; filter: drop-shadow(0 22px 25px rgba(0,0,0,.5)); animation: dragonIdle 3.1s ease-in-out infinite; }
+    .animation-copy h3 { margin: 0 0 8px; font-family: "Unbounded"; }
+    .animation-copy p { color: var(--muted); }
+    .animation-notice { font-size: .82rem; color: var(--muted); border-left: 2px solid var(--acid); padding-left: 12px; margin: 16px 0; }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .profile { grid-template-columns: 1fr; }
+      .stage { min-height: 300px; }
+      .skin-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 1450px); }
+      .topbar { min-height: 66px; }
+      .brand span, .source-pill span { display: none; }
+      main { padding-top: 25px; }
+      .intro { grid-template-columns: 1fr; }
+      .count-block { text-align: left; display: flex; align-items: baseline; gap: 10px; }
+      .count-block strong { font-size: 2rem; }
+      .controls { margin-inline: -4px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { min-height: 430px; }
+      dialog { width: 100%; }
+      .modal-content { padding: 12px; }
+      .profile { padding: 16px; }
+      .skin-card { grid-template-columns: 118px 1fr; }
+      .moves, .animation-panel { grid-template-columns: 1fr; }
+      footer { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell topbar">
+    <a class="brand" href="#catalogo" aria-label="Atlas Dracônico — início">
+      <span class="brand-mark"><i data-lucide="flame"></i></span>
+      <strong>Atlas Dracônico</strong><span>Dragon City</span>
+    </a>
+    <div class="source-pill"><i data-lucide="database" width="16"></i><span>Dados visuais:</span> <a href="https://www.ditlep.com/dragons" target="_blank" rel="noreferrer">Ditlep</a></div>
+  </header>
+
+  <main class="shell" id="catalogo">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Arquivo de treinadores</p>
+        <h1 id="page-title">Encontre seu próximo dragão.</h1>
+        <p class="intro-copy">Pesquise por nome ou família. Abra a ficha para comparar skins, bônus de combate, golpes e a prévia animada.</p>
+      </div>
+      <div class="count-block"><strong id="visibleCount">6</strong><span>dragões catalogados</span></div>
+    </section>
+
+    <section class="controls" aria-label="Busca e filtros">
+      <div class="search-wrap">
+        <i data-lucide="search"></i>
+        <input id="search" class="search" type="search" autocomplete="off" placeholder="Buscar por nome ou família…" aria-label="Buscar dragão por nome ou família" />
+        <button id="clearSearch" class="clear-search" aria-label="Limpar busca"><i data-lucide="x"></i></button>
+      </div>
+      <div id="filters" class="filters" aria-label="Filtrar por família"></div>
+    </section>
+
+    <div class="resultbar"><span id="resultText">Mostrando <b>6</b> dragões</span><span>Selecione um card para abrir a ficha</span></div>
+    <section id="dragonGrid" class="grid" aria-live="polite"></section>
+  </main>
+
+  <footer class="shell">
+    <span>Catálogo independente, não afiliado à Socialpoint. Artes e nomes pertencem aos respectivos proprietários.</span>
+    <span>Referências: <a href="https://www.ditlep.com/dragons" target="_blank" rel="noreferrer">Ditlep Dragon City Guide</a> · <a href="https://www.dragoncitygame.com/news" target="_blank" rel="noreferrer">Dragon City oficial</a></span>
+  </footer>
+
+  <dialog id="dragonDialog" aria-labelledby="detailName">
+    <div class="modal-shell">
+      <header class="modal-top">
+        <span class="modal-kicker">Ficha do dragão</span>
+        <button id="closeDialog" class="icon-btn" aria-label="Fechar ficha"><i data-lucide="x"></i></button>
+      </header>
+      <div id="modalContent" class="modal-content"></div>
+    </div>
+  </dialog>
+
+  <script>
+    const img = file => `https://www.ditlep.com/Image?m=dragons/${file}`;
+    const dragons = [
+      {
+        id: 3011, name: 'High Master Karma', family: 'Karma', rarity: 'Heroico', category: 11,
+        image: img('ui_3011_dragon_highmasterkarma_3.png'),
+        source: 'https://www.ditlep.com/dragons/3011/high-master-karma-dragon?lang=en-US',
+        aura: 'radial-gradient(circle at 50% 27%, rgba(113,246,220,.30), transparent 42%), linear-gradient(145deg, rgba(26,76,68,.75), transparent 60%)',
+        detailAura: 'radial-gradient(circle at 18% 30%, rgba(113,246,220,.12), transparent 40%)',
+        description: 'O líder da família Karma combina pressão em área com uma chance de absorver ataques e devolver o dobro do dano.',
+        elements: [['Caos','#b97fff'],['Vento','#bdeef3'],['Primordial','#ffab62'],['Gelo','#72d4ff']],
+        skins: [
+          {name:'Visual padrão', type:'Original', image:img('ui_3011_dragon_highmasterkarma_3.png'), buff:'Sem bônus de combate associado ao visual padrão.'},
+          {name:'All-Seeing Father', type:'Skin de habilidade', image:img('ui_3011_dragon_highmasterkarma_skin3_3@2x.png'), buff:'Ao possuir: +25% de vida e +25% de dano total.'}
+        ],
+        base:[['Karma Yin','Caos',2000,'sparkles'],['Sky Cutter','Vento',1400,'wind'],['Slash of Ages','Primordial',1200,'swords'],['Karma Yang','Gelo',2000,'snowflake']],
+        trained:[['Karma Yin','Caos',2000,'sparkles'],['Tempest','Vento',2400,'wind'],['Archaic Pain','Primordial',2000,'swords'],['Karma Yang','Gelo',2000,'snowflake']]
+      },
+      {
+        id: 2901, name: 'High Corrupted Time', family: 'Corrupted', rarity: 'Heroico', category: 11,
+        image: img('ui_2901_dragon_highcorruptedtime_3.png'),
+        source: 'https://www.ditlep.com/dragons/2901/high-corrupted-time-dragon',
+        aura: 'radial-gradient(circle at 50% 28%, rgba(186,140,255,.32), transparent 42%), linear-gradient(145deg, rgba(57,23,88,.74), transparent 62%)',
+        detailAura: 'radial-gradient(circle at 18% 30%, rgba(186,140,255,.15), transparent 40%)',
+        description: 'Um heroico que distorce o tempo, rouba vida com Presas Corrompidas e alterna entre técnicas vampíricas imprevisíveis.',
+        elements: [['Tempo','#86e9ff'],['Vento','#bdeef3'],['Metal','#aab5bd'],['Caos','#b97fff']],
+        skins: [
+          {name:'Visual padrão', type:'Original', image:img('ui_2901_dragon_highcorruptedtime_3.png'), buff:'Sem bônus de combate associado ao visual padrão.'},
+          {name:'Dimensional', type:'Skin de habilidade', image:img('ui_2901_dragon_highcorruptedtime_skin1_3@2x.png'), buff:'Fortalece o dano de Presas Corrompidas e aumenta o dano geral do dragão.'}
+        ],
+        base:[['Presas Corrompidas','Tempo',2000,'timer-reset'],['Último Suspiro','Vento',2700,'wind'],['Ferrugem','Metal',1050,'cog'],['Correntes do Destino','Caos',1175,'link']],
+        trained:[['Presas Corrompidas','Tempo',2000,'timer-reset'],['Último Suspiro','Vento',2700,'wind'],['Ferrugem+','Metal',2500,'cog'],['Desordem','Caos',1350,'sparkles']]
+      },
+      {
+        id: 3109, name: 'High Redemption Norn', family: 'Redemption', rarity: 'Heroico', category: 11,
+        image: img('ui_3109_dragon_highredemptionnorn_3.png'),
+        source: 'https://www.ditlep.com/dragons/3109/high-redemption-norn-dragon?lang=en-US',
+        aura: 'radial-gradient(circle at 50% 28%, rgba(255,152,80,.31), transparent 42%), linear-gradient(145deg, rgba(83,39,18,.75), transparent 62%)',
+        detailAura: 'radial-gradient(circle at 18% 30%, rgba(255,152,80,.14), transparent 40%)',
+        description: 'A guardiã da Redenção combina dano em área, controle de troca e uma mecânica de retorno capaz de virar batalhas.',
+        elements: [['Sonho','#ff91d6'],['Gelo','#72d4ff'],['Caos','#b97fff'],['Vento','#bdeef3']],
+        skins: [
+          {name:'Visual padrão', type:'Original', image:img('ui_3109_dragon_highredemptionnorn_3.png'), buff:'Sem bônus de combate associado ao visual padrão.'},
+          {name:'Norn Skill Skin', type:'Skin de atributo', image:img('ui_3109_dragon_highredemptionnorn_skin3_3@2x.png'), buff:'Ao possuir: +25% de vida e +25% de dano total.'},
+          {name:'Ascended Deity', type:'Skin de habilidade', image:img('ui_3109_dragon_highredemptionnorn_skin2_3@2x.png'), buff:'Aprimora a função da habilidade de troca e retorno. Consulte a ficha da versão atual para os valores.'},
+          {name:'Fallen Deity', type:'Skin de habilidade', image:img('ui_3109_dragon_highredemptionnorn_skin1_3@2x.png'), buff:'Variante de combate que altera a habilidade especial; o efeito depende da configuração ativa do jogo.'}
+        ],
+        base:[['No Remorse','Sonho',2000,'rotate-ccw'],['Snow Storm','Gelo',1200,'snowflake'],['Iron Shock','Caos',1600,'zap'],['Violet Winds','Vento',1200,'wind']],
+        trained:[['No Remorse','Sonho',2000,'rotate-ccw'],['Cryogenic Freeze+','Gelo',2100,'snowflake'],['Disorder','Caos',1350,'sparkles'],['Risen Violet Winds','Vento',2150,'wind']]
+      },
+      {
+        id: 3145, name: 'High Arcana Judgement', family: 'Arcana', rarity: 'Heroico', category: 11,
+        image: img('ui_3145_dragon_higharcanajudgement_3.png'),
+        source: 'https://vip.ditlep.com/dragons/3145/high-arcana-judgement-dragon?lang=en-US',
+        aura: 'radial-gradient(circle at 50% 28%, rgba(255,231,105,.29), transparent 42%), linear-gradient(145deg, rgba(72,53,15,.76), transparent 62%)',
+        detailAura: 'radial-gradient(circle at 18% 30%, rgba(255,231,105,.13), transparent 40%)',
+        description: 'O juiz Arcana ataca várias vezes, recupera vida e fica mais perigoso quando sua própria vida está baixa.',
+        elements: [['Alma','#f5e8a3'],['Lenda','#f4ca48'],['Puro','#f1c8ff'],['Vento','#bdeef3']],
+        skins: [
+          {name:'Visual padrão', type:'Original', image:img('ui_3145_dragon_higharcanajudgement_3.png'), buff:'Sem bônus de combate associado ao visual padrão.'},
+          {name:'Cursed', type:'Skin de habilidade', image:img('ui_3145_dragon_higharcanajudgement_skin2_3@2x.png'), buff:'Substitui Arcana Emergency por Arcana Curse nos golpes base e treinados.'},
+          {name:'Blessed', type:'Skin de habilidade', image:img('ui_3145_dragon_higharcanajudgement_skin1_3@2x.png'), buff:'Skin de combate; o bônus exato deve ser conferido na configuração atual do jogo.'}
+        ],
+        base:[['Arcana Absorption','Alma',2100,'heart-pulse'],['Arcana Emergency','Lenda',2000,'triangle-alert'],['Hypnosis','Puro',1500,'eye'],['Violet Winds','Vento',1200,'wind']],
+        trained:[['Arcana Absorption','Alma',2100,'heart-pulse'],['Arcana Emergency','Lenda',2000,'triangle-alert'],['Hypnosis+','Puro',2100,'eye'],['Risen Violet Winds','Vento',2150,'wind']]
+      },
+      {
+        id: 3081, name: 'High Ascended Supreme', family: 'Ascended', rarity: 'Heroico', category: 11,
+        image: img('ui_3081_dragon_highascendedsupreme_3.png'),
+        source: 'https://www.ditlep.com/dragons/3081/high-ascended-supreme-dragon',
+        aura: 'radial-gradient(circle at 50% 28%, rgba(121,177,255,.30), transparent 42%), linear-gradient(145deg, rgba(23,51,88,.75), transparent 62%)',
+        detailAura: 'radial-gradient(circle at 18% 30%, rgba(121,177,255,.14), transparent 40%)',
+        description: 'O soberano Ascended sacrifica parte da própria vida para atingir inimigos e restaurar aliados.',
+        elements: [['Sonho','#ff91d6'],['Vento','#bdeef3'],['Lenda','#f4ca48'],['Sombrio','#8c79ad']],
+        skins: [
+          {name:'Visual padrão', type:'Original', image:img('ui_3081_dragon_highascendedsupreme_3.png'), buff:'Sem bônus de combate associado ao visual padrão.'},
+          {name:'Deus Ascendido', type:'Skin de combate', image:img('ui_3081_dragon_highascendedsupreme_skin1_3@2x.png'), buff:'Possui efeito de combate. Valores podem variar conforme a configuração publicada do jogo.'},
+          {name:'Deus Caído', type:'Skin de combate', image:img('ui_3081_dragon_highascendedsupreme_skin2_3@2x.png'), buff:'Possui efeito de combate. Consulte a fonte para o modificador vigente.'}
+        ],
+        base:[['Divine Sacrifice','Sonho',1800,'heart-crack'],['Violet Winds','Vento',1000,'wind'],['Divine Intervention','Lenda',1800,'move-right'],['Scarlet Shadows','Sombrio',1000,'moon']],
+        trained:[['Divine Sacrifice','Sonho',1800,'heart-crack'],['Violet Winds+','Vento',1500,'wind'],['Divine Intervention','Lenda',1800,'move-right'],['Scarlet Shadows+','Sombrio',1500,'moon']]
+      },
+      {
+        id: 2788, name: 'High Voodoo Vampire', family: 'Vampire', rarity: 'Heroico', category: 11,
+        image: img('ui_2788_dragon_highvoodoovampire_3.png'),
+        source: 'https://www.ditlep.com/dragons/2788/high-voodoo-vampire-dragon',
+        aura: 'radial-gradient(circle at 50% 28%, rgba(255,82,120,.29), transparent 42%), linear-gradient(145deg, rgba(82,20,42,.76), transparent 62%)',
+        detailAura: 'radial-gradient(circle at 18% 30%, rgba(255,82,120,.14), transparent 40%)',
+        description: 'Um vampiro heroico voltado à sobrevivência, com roubo de vida e técnicas capazes de pressionar vários alvos.',
+        elements: [['Puro','#f1c8ff'],['Magia','#cb85ff'],['Caos','#b97fff'],['Vento','#bdeef3']],
+        skins: [
+          {name:'Visual padrão', type:'Original', image:img('ui_2788_dragon_highvoodoovampire_3.png'), buff:'Sem bônus de combate associado ao visual padrão.'}
+        ],
+        base:[['Voodoo Vortex','Puro',2000,'orbit'],['Blood Eclipse','Magia',1800,'droplets'],['Hexed Agony','Caos',1600,'sparkles'],['Dark Gale','Vento',1200,'wind']],
+        trained:[['Voodoo Vortex','Puro',2000,'orbit'],['Blood Eclipse+','Magia',2200,'droplets'],['Hexed Agony+','Caos',2100,'sparkles'],['Tempest','Vento',2400,'wind']]
+      }
+    ];
+
+    const state = { query: '', family: 'Todas', activeDragon: null, activeTab: 'skins' };
+    const grid = document.querySelector('#dragonGrid');
+    const filters = document.querySelector('#filters');
+    const search = document.querySelector('#search');
+    const clearSearch = document.querySelector('#clearSearch');
+    const dialog = document.querySelector('#dragonDialog');
+
+    const families = ['Todas', ...new Set(dragons.map(d => d.family))];
+    const norm = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const elementHtml = elements => elements.map(([name,color]) => `<span class="element"><i style="--ec:${color}"></i>${name}</span>`).join('');
+
+    function renderFilters() {
+      filters.innerHTML = families.map(f => `<button class="chip ${state.family === f ? 'active' : ''}" data-family="${f}" aria-pressed="${state.family === f}"><span class="dot"></span>${f}</button>`).join('');
+      filters.querySelectorAll('.chip').forEach(button => button.addEventListener('click', () => {
+        state.family = button.dataset.family;
+        renderFilters(); renderGrid();
+      }));
+    }
+
+    function getVisibleDragons() {
+      const q = norm(state.query.trim());
+      return dragons.filter(d => (state.family === 'Todas' || d.family === state.family) && (!q || norm(`${d.name} ${d.family}`).includes(q)));
+    }
+
+    function renderGrid() {
+      const visible = getVisibleDragons();
+      document.querySelector('#visibleCount').textContent = visible.length;
+      document.querySelector('#resultText').innerHTML = `Mostrando <b>${visible.length}</b> ${visible.length === 1 ? 'dragão' : 'dragões'}`;
+      clearSearch.style.display = state.query ? 'grid' : 'none';
+      if (!visible.length) {
+        grid.innerHTML = `<div class="empty"><i data-lucide="search-x"></i><h3>Nenhum dragão encontrado</h3><div>Tente outro nome ou selecione uma família diferente.</div></div>`;
+        lucide.createIcons(); return;
+      }
+      grid.innerHTML = visible.map(d => `
+        <article class="card" tabindex="0" role="button" aria-label="Abrir ficha de ${d.name}" data-id="${d.id}">
+          <div class="card-bg" style="--aura:${d.aura}"></div>
+          <div class="card-head"><span class="rarity"><i data-lucide="crown" width="13"></i>${d.rarity}</span><span class="family-tag">${d.family}</span></div>
+          <img class="dragon-art" src="${d.image}" alt="${d.name}" loading="lazy" />
+          <div class="card-body">
+            <h2 class="dragon-name">${d.name}</h2>
+            <div class="elements">${elementHtml(d.elements)}</div>
+            <div class="card-footer"><span class="skin-count"><i data-lucide="palette" width="15"></i>${d.skins.length} ${d.skins.length === 1 ? 'visual' : 'skins'}</span><span class="open-label">Abrir ficha <i data-lucide="maximize-2" width="15"></i></span></div>
+          </div>
+        </article>`).join('');
+      grid.querySelectorAll('.card').forEach(card => {
+        const open = () => openDragon(Number(card.dataset.id));
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      });
+      lucide.createIcons();
+    }
+
+    function skinHtml(s) {
+      return `<article class="skin-card"><div class="skin-art"><img src="${s.image}" alt="${s.name}" loading="lazy" /></div><div class="skin-copy"><span class="skin-type"><i data-lucide="shirt" width="14"></i>${s.type}</span><h3>${s.name}</h3><p>${s.type === 'Original' ? 'Aparência base do dragão.' : 'Visual alternativo disponível no jogo.'}</p><div class="buff"><i data-lucide="badge-plus"></i><span>${s.buff}</span></div></div></article>`;
+    }
+
+    function moveHtml(m) {
+      const colorMap = {Caos:'#b97fff',Vento:'#bdeef3',Primordial:'#ffab62',Gelo:'#72d4ff',Tempo:'#86e9ff',Metal:'#aab5bd',Sonho:'#ff91d6',Alma:'#f5e8a3',Lenda:'#f4ca48',Puro:'#f1c8ff',Sombrio:'#8c79ad',Magia:'#cb85ff'};
+      return `<div class="move"><div class="move-icon" style="--mc:${colorMap[m[1]] || '#d5ff55'}"><i data-lucide="${m[3]}"></i></div><div><strong>${m[0]}</strong><small>${m[1]}</small></div><span class="power">${m[2]}</span></div>`;
+    }
+
+    function openDragon(id) {
+      const d = dragons.find(item => item.id === id); if (!d) return;
+      state.activeDragon = d; state.activeTab = 'skins';
+      document.querySelector('#modalContent').innerHTML = `
+        <section class="profile" style="--detail-aura:${d.detailAura}">
+          <div class="stage" id="mainStage"><img src="${d.image}" alt="${d.name}" /></div>
+          <div class="profile-copy"><span class="detail-family">Família ${d.family}</span><h2 id="detailName">${d.name}</h2><p>${d.description}</p><div class="meta-row"><span class="meta-pill"><i data-lucide="crown" width="15"></i>${d.rarity}</span><span class="meta-pill"><i data-lucide="layers-3" width="15"></i>Categoria ${d.category}</span><span class="meta-pill"><i data-lucide="fingerprint" width="15"></i>#${d.id}</span></div><div class="elements">${elementHtml(d.elements)}</div><div class="action-row" style="margin-top:20px"><button class="action primary" id="quickAnimate"><i data-lucide="play" width="16"></i>Animar dragão</button><a class="action" href="${d.source}" target="_blank" rel="noreferrer"><i data-lucide="external-link" width="16"></i>Ver fonte</a></div></div>
+        </section>
+        <nav class="tabs" role="tablist" aria-label="Detalhes do dragão"><button class="tab active" data-tab="skins" role="tab">Skins e buffs</button><button class="tab" data-tab="moves" role="tab">Golpes</button><button class="tab" data-tab="animation" role="tab">Animação</button></nav>
+        <section class="tab-panel active" data-panel="skins"><div class="skin-grid">${d.skins.map(skinHtml).join('')}</div></section>
+        <section class="tab-panel" data-panel="moves"><div class="moves"><article class="move-column"><h3><i data-lucide="swords" width="18"></i>Golpes base</h3><div class="move-list">${d.base.map(moveHtml).join('')}</div></article><article class="move-column"><h3><i data-lucide="dumbbell" width="18"></i>Golpes treinados</h3><div class="move-list">${d.trained.map(moveHtml).join('')}</div></article></div></section>
+        <section class="tab-panel" data-panel="animation"><div class="animation-panel"><div class="mini-stage"><img src="${d.image}" alt="Prévia animada de ${d.name}" /></div><div class="animation-copy"><span class="detail-family">Prévia em movimento</span><h3>Idle flutuante</h3><p>Uma prévia leve da presença do dragão, com movimento, inclinação e brilho adaptados para a ficha.</p><div class="animation-notice">A animação original completa usa arquivos do jogo. O link abaixo abre o visualizador 3D de referência quando disponível.</div><a class="action" href="https://www.ditlep.com/DragonAnimation?dragonId=${d.id}" target="_blank" rel="noreferrer"><i data-lucide="box" width="16"></i>Abrir animação 3D</a></div></div></section>`;
+      wireModal(); dialog.showModal(); lucide.createIcons();
+    }
+
+    function wireModal() {
+      const stage = document.querySelector('#mainStage');
+      document.querySelector('#quickAnimate').addEventListener('click', event => {
+        stage.classList.toggle('playing');
+        const playing = stage.classList.contains('playing');
+        event.currentTarget.innerHTML = `<i data-lucide="${playing ? 'pause' : 'play'}" width="16"></i>${playing ? 'Pausar' : 'Animar dragão'}`;
+        lucide.createIcons();
+      });
+      document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
+        state.activeTab = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === state.activeTab));
+      }));
+    }
+
+    search.addEventListener('input', () => { state.query = search.value; renderGrid(); });
+    clearSearch.addEventListener('click', () => { search.value = ''; state.query = ''; search.focus(); renderGrid(); });
+    document.querySelector('#closeDialog').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+
+    function registerWebMCP() {
+      const context = document.modelContext;
+      if (!context?.registerTool) return;
+      const safe = fn => input => { try { return fn(input || {}); } catch (error) { throw new Error(error.message); } };
+      context.registerTool({
+        name:'search_dragons', title:'Pesquisar dragões', description:'Filtra o catálogo visível por nome e, opcionalmente, por família.',
+        inputSchema:{type:'object',properties:{query:{type:'string'},family:{type:'string',enum:families}},additionalProperties:false},
+        annotations:{readOnlyHint:true,untrustedContentHint:false},
+        execute:safe(({query='',family='Todas'}) => { if (!families.includes(family)) throw new Error('Família inválida.'); state.query=query; state.family=family; search.value=query; renderFilters(); renderGrid(); return {count:getVisibleDragons().length,names:getVisibleDragons().map(d=>d.name)}; })
+      });
+      context.registerTool({
+        name:'open_dragon_profile', title:'Abrir ficha de dragão', description:'Abre a ficha de um dragão pelo ID e exibe skins, golpes e animação.',
+        inputSchema:{type:'object',properties:{id:{type:'integer'}},required:['id'],additionalProperties:false},
+        annotations:{readOnlyHint:true,untrustedContentHint:false},
+        execute:safe(({id}) => { const d=dragons.find(x=>x.id===id); if(!d) throw new Error('Dragão não encontrado.'); openDragon(id); return {id:d.id,name:d.name,family:d.family,skins:d.skins.length}; })
+      });
+    }
+
+    renderFilters(); renderGrid(); registerWebMCP(); lucide.createIcons();
+  </script>
+</body>
+</html>
